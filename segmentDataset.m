@@ -1,5 +1,4 @@
 function [Xtrain,ytrain,Xcv,ycv,Xtest,ytest]=segmentDataset(X,y)
-	% TEST TO SEE GITHUB WORKING
 	% Segment feature matrix X and label vector y into training, cross validation
 	% and test sets:
 	% -- Randomly shuffle X,y in parallel before segmenting
