@@ -16,7 +16,7 @@
 - load Data.mat
 - save("-mat7-binary","BioData.mat")
 
-- #load BioData.mat# to read data and get X & y & X_test matrix.
+- "load BioData.mat" to read data and get X & y & X_test matrix.
 
 ###
 ### 
