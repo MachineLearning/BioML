@@ -16,7 +16,7 @@ end
 skewness = sum(y == 1)/length(y);
 skewness = min(skewness, 1 - skewness);
 
-if skewness <= threshold
+if (skewness <= threshold)
     isskewed = true;
 else
     isskewed = false;
