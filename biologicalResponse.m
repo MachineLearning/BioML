@@ -36,7 +36,7 @@ printf("Learning using Logistic Regression. ") ;
 % Initialize fitting parameters
 initial_theta = zeros(size(X_train, 2), 1);
 
-% Set regularization parameter lambda to 1
+% Set regularization parameter lambda to 1.
 lambda = 1;
 
 
@@ -62,13 +62,11 @@ for i = 1:DATAPOINTS_NEEDED
    X_used = X_train(1:m_count, :) ;
    y_used = y_train(1:m_count, :) ;
 
-   printf("\nSize of X_used is: %d X %d", size(X_used)) ;
-   printf("\nSize of y_used is: %d X %d", size(y_used)) ;
    % Optimize
    [theta, J, exit_flag] = ...
 	fminunc(@(t)(lrCostFunction(t, X_used, y_used, lambda)), initial_theta, options);
 
-   printf("\nLearning completed. Lambda used: %f # of samples used(m): %d\n",lambda, m_count) ;
+   printf("\nLearning completed. Lambda used: %.1f -- # of samples used(m): %d\n",lambda, m_count) ;
    
    % store the values to be plotted. NEED TO ADD J_cv
    J_train_values(i) = J ;
@@ -79,6 +77,7 @@ for i = 1:DATAPOINTS_NEEDED
    m_count = min(m, m_count + step_for_m) ;
 endfor
 
+plotErrors(m_values, J_train_values, J_cv_values) ;
 
 %% =========== Part 3: Testing and evaluation ============
 % Compute accuracy on our testing set.
