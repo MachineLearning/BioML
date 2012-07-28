@@ -1,22 +1,8 @@
 ###
-### Data preprocessing
+###
 ###
 
-%-- 23/07/12 14:13 --% Using Matlab
-- train = load('train.csv')
-- test = load('test.csv')
-- size(train,1)
-- size(train(:,1))
-- y = train(:,1)
-- size(train(:,2:end))
-- X = train(:,2:end)
-- X_test = test
-- save('Data')
-%-- 23/07/12 15:44 --% Using Octave
-- load Data.mat
-- save("-mat7-binary","BioData.mat")
-
-- "load BioData.mat" to read data and get X & y & X_test matrix.
+Predict a biological response of molecules from their chemical properties.
 
 ###
 ### 
