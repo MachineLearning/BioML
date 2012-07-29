@@ -29,6 +29,9 @@ printf("Data is%s skewed\n", aux) ;
 printf("\nProgram paused (3 secs).\n");
 pause (3) ;
 
+% printf("\nGraphing data. Please wait ...\n");
+% visualiseData(X_train) ;
+
 %% =========== Part 2: Regularized Logistic Regression ============
 
 printf("Learning using Logistic Regression. ") ;
