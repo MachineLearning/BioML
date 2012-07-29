@@ -10,6 +10,9 @@ printf('\nBiological Response Learning\n') ;
 printf("\nLoading TRAINING data ... ") ;
 load("BioData.mat");
 
+% Add ones to the data matrix
+X = [ones(size(X,1), 1) X];
+
 % Split the training data into train, CV and test
 [X_train, y_train, X_cv, y_cv, X_test, y_test] = segmentDataset(X, y) ;
 
@@ -61,6 +64,8 @@ m_values = zeros(DATAPOINTS_NEEDED, 1) ;
 J_train_values = zeros(DATAPOINTS_NEEDED, 1) ;
 J_cv_values = zeros(DATAPOINTS_NEEDED, 1) ;
 
+t0 = clock() ;
+
 for i = 1:DATAPOINTS_NEEDED
    X_used = X_train(1:m_count, :) ;
    y_used = y_train(1:m_count, :) ;
@@ -79,6 +84,8 @@ for i = 1:DATAPOINTS_NEEDED
    % increase the number of samples used, making sure we never exceed m
    m_count = min(m, m_count + step_for_m) ;
 endfor
+
+elapsed_time = etime(clock(), t0) ;
 
 plotErrors(m_values, J_train_values, J_cv_values) ;
 
