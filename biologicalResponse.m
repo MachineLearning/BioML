@@ -1,7 +1,7 @@
 %% Biological Response - Kaggle
 %
 %
-page_output_immediately(1) ;
+%page_output_immediately(1) ;
 
 printf('\nBiological Response Learning\n') ;
 
@@ -11,7 +11,7 @@ printf("\nLoading TRAINING data ... ") ;
 load("BioData.mat");
 
 % Add ones to the data matrix
-X = [ones(size(X,1), 1) X];
+%X = [ones(size(X,1), 1) X];
 
 % Split the training data into train, CV and test
 [X_train, y_train, X_cv, y_cv, X_test, y_test] = segmentDataset(X, y) ;
@@ -35,23 +35,12 @@ pause (3) ;
 % printf("\nGraphing data. Please wait ...\n");
 % visualiseData(X_train) ;
 
-%% =========== Part 2: Regularized Logistic Regression ============
+%% =========== Part 2: LEARNING ============
 
-printf("Learning using Logistic Regression. ") ;
 
 % Initialize fitting parameters
 initial_theta = zeros(size(X_train, 2), 1);
 
-% Set regularization parameter lambda to 1.
-lambda = 1;
-
-
-% Set Options
-options = optimset('GradObj', 'on', 'MaxIter', 100);
-
-% Loop for increasing values of m. Needed to obtain pairs
-% (J_train, m) and (J_cv, m) in order to be able to plot
-% the corresponding error curves
 
 % Determine the step to use to increase m. Assuming that we need 20
 % datapoints. We can change that number if needed.
@@ -66,36 +55,90 @@ J_cv_values = zeros(DATAPOINTS_NEEDED, 1) ;
 
 t0 = clock() ;
 
+%% ------- LOGISTIC REGRESSION PARAMETERS ------------
+% Set regularization parameter lambda to 1.
+% Set Options
+lambda = 1;
+options = optimset('GradObj', 'on', 'MaxIter', 400);
+%% ---------------------------------------------------
+
+%% ----------------- SVM Parameters ------------------
+% got 72.0 with C=10, sigma=1
+% got 76.13 with C=30, sigma=3  TIME:4909 secs (> 1 hour)
+% got 72.40 with C=50, sigma=5  TIME:???? secs (> ? hour)
+% got 77.20 with C=30, sigma=5  TIME:5702 secs (> 1 hour)
+
+C = 30; 
+sigma = 5.0;
+%% ---------------------------------------------------
+
+learning_algorithm = "SVM" ;
+
+if (strcmp(learning_algorithm, "LR"))
+  printf("Learning using Logistic Regression. ") ;
+elseif (strcmp(learning_algorithm, "SVM"))
+  printf("Learning using Support Vector Machine (Gaussian Kernel). ") ;
+endif
+
+fflush(stdout) ;
+
+% Loop for increasing values of m. Needed to obtain pairs
+% (J_train, m) and (J_cv, m) in order to be able to plot
+% the corresponding error curves
 for i = 1:DATAPOINTS_NEEDED
    X_used = X_train(1:m_count, :) ;
    y_used = y_train(1:m_count, :) ;
 
    % Optimize
-   [theta, J, exit_flag] = ...
-	fminunc(@(t)(lrCostFunction(t, X_used, y_used, lambda)), initial_theta, options);
 
-   printf("\nLearning completed. Lambda used: %.1f -- # of samples used(m): %d\n",lambda, m_count) ;
+   if (strcmp(learning_algorithm, "LR"))
+     [theta, J, exit_flag] = ...
+	fminunc(@(t)(lrCostFunction(t, X_used, y_used, lambda)), \
+		initial_theta, options);
+
+     message = sprintf("Lambda used: %.1f", lambda) ;
+
+   elseif (strcmp(learning_algorithm, "SVM"))
+     model= svmTrain(X_used, y_used, C, @(x1, x2) gaussianKernel(x1, \
+								 x2, \
+								 sigma)); \
+	 
+     message = sprintf("C used: %.1f, sigma used: %.1f", C, sigma) ;
+
+   endif
+
+   printf("\nLearning completed. %s -- # of samples used(m): %d\n",message, m_count) ;
    
    % store the values to be plotted. NEED TO ADD J_cv
-   J_train_values(i) = J ;
-   J_cv_values(i) = lrCostFunction(theta, X_cv, y_cv, lambda) ;
-   m_values(i) = m_count ;
+   if (strcmp(learning_algorithm, "LR"))
+     J_train_values(i) = J ;
+     J_cv_values(i) = lrCostFunction(theta, X_cv, y_cv, lambda) ;
+     m_values(i) = m_count ;
+   endif
    
    % increase the number of samples used, making sure we never exceed m
    m_count = min(m, m_count + step_for_m) ;
 endfor
 
 elapsed_time = etime(clock(), t0) ;
+printf("\nElapsed time (in secs): %d",elapsed_time) ;
 
-plotErrors(m_values, J_train_values, J_cv_values) ;
+if (strcmp(learning_algorithm, "LR"))
+  plotErrors(m_values, J_train_values, J_cv_values) ;
+endif
 
 %% =========== Part 3: Testing and evaluation ============
 % Compute accuracy on our testing set.
 
 [m_test, cols] = size(X_test) ;
-printf("Test data dimension is : %d X %d\n", m_test, cols);
+printf("\nTest data dimension is : %d X %d\n", m_test, cols);
 
-p = predict(theta, X_test);
+
+if (strcmp(learning_algorithm, "LR"))
+  p = predict(theta, X_test);
+elseif (strcmp(learning_algorithm, "SVM"))
+  p = svmPredict(model, X_test) ;
+endif
 
 printf("Train Accuracy: %f\n", mean(double(p == y_test)) * 100);
 
