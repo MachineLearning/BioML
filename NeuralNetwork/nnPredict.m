@@ -1,4 +1,4 @@
-function p = predict(Theta1, Theta2, X)
+function p = nnPredict(Theta1, Theta2, Theta3, X)
 %PREDICT Predict the label of an input given a trained neural network
 %   p = PREDICT(Theta1, Theta2, X) outputs the predicted label of X given the
 %   trained weights of a neural network (Theta1, Theta2)
@@ -12,9 +12,10 @@ p = zeros(m, 1);
 
 h1 = sigmoid([ones(m, 1) X] * Theta1');
 h2 = sigmoid([ones(m, 1) h1] * Theta2');
+h3 = sigmoid([ones(m, 1) h2] * Theta3');
 
 for sample = 1:m
-	if (h2(sample) >= 0.5)
+	if (h3(sample) >= 0.5)
         p(sample) = 1 ;
     else
         p(sample) = 0 ;

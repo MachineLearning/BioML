@@ -18,18 +18,26 @@ printf("Dimension for y_train is : %d X %d\n", size(y_train));
 
 %% =========== Part 2: Neural Network ============
 input_layer_size  = 1776;  % Represent molecular descriptors (d1 through d1776)
-hidden_layer_size = 25;   % 25 hidden units
+first_hidden_layer_size = 40;   % 40 hidden units
+second_hidden_layer_size = 10;   % 10 hidden units
 output_layer_size = 1;   % biological response
 
+% first = 40 && second = 10 ===========> 77.46%
+% first = 40 && second = 10 ===========> 76.53%
+% first = 50 && second = 10 ===========> 76.26%
+% first = 60 && second = 20 ===========> 74.66%
+% first = 25 && second = 25 ===========> 75.33%
+ 
 printf("Learning using Neural Network. ");
 
 printf('\nInitializing Neural Network Parameters ...\n');
 
-initial_Theta1 = nnRandInitializeWeights(input_layer_size, hidden_layer_size);
-initial_Theta2 = nnRandInitializeWeights(hidden_layer_size, output_layer_size);
+initial_Theta1 = nnRandInitializeWeights(input_layer_size, first_hidden_layer_size);
+initial_Theta2 = nnRandInitializeWeights(first_hidden_layer_size, second_hidden_layer_size);
+initial_Theta3 = nnRandInitializeWeights(second_hidden_layer_size, output_layer_size);
 
 % Unroll parameters
-initial_nn_params = [initial_Theta1(:) ; initial_Theta2(:)];
+initial_nn_params = [initial_Theta1(:) ; initial_Theta2(:) ; initial_Theta3(:)];
 
 printf('\nTraining Neural Network... \n');
 
@@ -44,7 +52,7 @@ lambda = 1;
 
 % Determine the step to use to increase m. Assuming that we need 20
 % datapoints. We can change that number if needed.
-DATAPOINTS_NEEDED = 5;
+DATAPOINTS_NEEDED = 1;
 
 step_for_m = ceil(m / DATAPOINTS_NEEDED) ;
 m_count = step_for_m ;
@@ -58,7 +66,7 @@ for i = 1:DATAPOINTS_NEEDED
 	y_used = y_train(1:m_count, :) ;
 
 	% Optimize
-	costFunction = @(p) nnCostFunction(p, input_layer_size, hidden_layer_size, output_layer_size, X_used, y_used, lambda);
+	costFunction = @(p) nnCostFunction(p, input_layer_size, first_hidden_layer_size, second_hidden_layer_size, output_layer_size, X_used, y_used, lambda);
 									   
 	[nn_params, cost] = fmincg(costFunction, initial_nn_params, options);
 
@@ -66,7 +74,7 @@ for i = 1:DATAPOINTS_NEEDED
 	
 	% store the values to be plotted. NEED TO ADD J_cv
 	J_train_values(i) = cost(50);
-	J_cv_values(i) = nnCostFunction(nn_params, input_layer_size, hidden_layer_size, output_layer_size, X_cv, y_cv, lambda);
+	J_cv_values(i) = nnCostFunction(nn_params, input_layer_size, first_hidden_layer_size, second_hidden_layer_size, output_layer_size, X_cv, y_cv, lambda);
 	m_values(i) = m_count ;
 	   
 	% increase the number of samples used, making sure we never exceed m
@@ -76,18 +84,22 @@ endfor
 plotErrors(m_values, J_train_values, J_cv_values) ;
 
 % Obtain Theta1 and Theta2 back from nn_params
-Theta1 = reshape(nn_params(1:hidden_layer_size * (input_layer_size + 1)), ...
-                 hidden_layer_size, (input_layer_size + 1));
+stop = first_hidden_layer_size * (input_layer_size + 1);
+Theta1 = reshape(nn_params(1:stop), first_hidden_layer_size, (input_layer_size + 1));
 
-Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):end), ...
-                 output_layer_size, (hidden_layer_size + 1));
-		
+begin = stop+1; 
+stop = stop+(second_hidden_layer_size*(first_hidden_layer_size + 1));
+Theta2 = reshape(nn_params(begin:stop), second_hidden_layer_size, (first_hidden_layer_size + 1));
+
+begin = stop+1;
+Theta3 = reshape(nn_params(begin:end) , output_layer_size, (second_hidden_layer_size + 1));
+				 
 %% =========== Part 3: Testing and evaluation ============
 % Compute accuracy on our testing set.
 
 [m_test, cols] = size(X_test) ;
 printf("Test data dimension is : %d X %d\n", m_test, cols);
 
-p = nnPredict(Theta1, Theta2, X_test);
+p = nnPredict(Theta1, Theta2, Theta3, X_test);
 
 printf("Train Accuracy: %f\n", mean(double(p == y_test)) * 100);

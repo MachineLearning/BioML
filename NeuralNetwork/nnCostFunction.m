@@ -1,6 +1,7 @@
 function [J grad] = nnCostFunction(nn_params, ...
                                    input_layer_size, ...
-                                   hidden_layer_size, ...
+                                   first_hidden_layer_size, ...
+								   second_hidden_layer_size, ...
                                    output_layer_size, ...
                                    X, y, lambda)
 %NNCOSTFUNCTION Implements the neural network cost function for a two layer
@@ -16,11 +17,16 @@ function [J grad] = nnCostFunction(nn_params, ...
 
 % Reshape nn_params back into the parameters Theta1 and Theta2, the weight matrices
 % for our 2 layer neural network
-Theta1 = reshape(nn_params(1:hidden_layer_size * (input_layer_size + 1)), ...
-                 hidden_layer_size, (input_layer_size + 1));
 
-Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):end), ...
-                 output_layer_size, (hidden_layer_size + 1));
+stop = first_hidden_layer_size * (input_layer_size + 1);
+Theta1 = reshape(nn_params(1:stop), first_hidden_layer_size, (input_layer_size + 1));
+
+begin = stop+1; 
+stop = stop+(second_hidden_layer_size*(first_hidden_layer_size + 1));
+Theta2 = reshape(nn_params(begin:stop), second_hidden_layer_size, (first_hidden_layer_size + 1));
+
+begin = stop+1;
+Theta3 = reshape(nn_params(begin:end) , output_layer_size, (second_hidden_layer_size + 1));
 
 % Setup some useful variables
 m = size(X, 1);
@@ -29,6 +35,7 @@ m = size(X, 1);
 J = 0;
 Theta1_grad = zeros(size(Theta1));
 Theta2_grad = zeros(size(Theta2));
+Theta3_grad = zeros(size(Theta3));
 
 % ====================== YOUR CODE HERE ======================
 % Instructions: You should complete the code by working through the
@@ -69,11 +76,13 @@ X = [ones(m, 1) X];
 a2 = sigmoid(X*Theta1');
 a2 = [ones(m, 1) a2];
 a3 = sigmoid(a2*Theta2');
+a3 = [ones(m, 1) a3];
+a4 = sigmoid(a3*Theta3');
 
 % Cost
-J = (1/m)*(sum(sum(-y.*log(a3) - (1 - y).*log(1-a3)))); 
+J = (1/m)*(sum(sum(-y.*log(a4) - (1 - y).*log(1-a4)))); 
 % Reg  
-J = J + ( (lambda/(2*m)) * (sum(sum(Theta1(:,2:size(Theta1,2)).^2)) + sum(sum(Theta2(:,2:size(Theta2,2)).^2))) );
+J = J + ( (lambda/(2*m)) * (sum(sum(Theta1(:,2:size(Theta1,2)).^2)) + sum(sum(Theta2(:,2:size(Theta2,2)).^2))+ sum(sum(Theta3(:,2:size(Theta3,2)).^2))) );
 
 
 
@@ -82,6 +91,7 @@ J = J + ( (lambda/(2*m)) * (sum(sum(Theta1(:,2:size(Theta1,2)).^2)) + sum(sum(Th
 
 deltaGrand_1 = zeros(size(Theta1));
 deltaGrand_2 = zeros(size(Theta2));
+deltaGrand_3 = zeros(size(Theta3));
 for i=1:m,
     x = X(i,:);
 	x = x';
@@ -90,20 +100,37 @@ for i=1:m,
 	a2 = [1;a2];
 	z3 = Theta2*a2;
 	a3 = sigmoid(z3);
-	delta3 = zeros(output_layer_size,1);
+	a3 = [1;a3];
+	z4 = Theta3*a3;
+	a4 = sigmoid(z4);
+	
+	delta4 = zeros(output_layer_size,1);
 	sol = y(i);
-	delta3 = a3-sol;
-	%sig=a2.*(1-a2);
-	%delta2 = (Theta2')*delta3.*sig;
+	delta4 = a4-sol;
+	delta3 = (Theta3')*delta4.*sigmoidGradient([1;z3]);
+	delta3 = delta3(2:end,:);
 	delta2 = (Theta2')*delta3.*sigmoidGradient([1;z2]);
 	delta2 = delta2(2:end,:);
-	
 	deltaGrand_1 = deltaGrand_1 + delta2*x';
 	deltaGrand_2 = deltaGrand_2 + delta3*a2';
+	deltaGrand_3 = deltaGrand_3 + delta4*a3';
+	
+	%delta3 = zeros(output_layer_size,1);
+	%sol = y(i);
+	%delta3 = a3-sol;
+	
+	%sig=a2.*(1-a2);
+	%delta2 = (Theta2')*delta3.*sig;
+	%delta2 = (Theta2')*delta3.*sigmoidGradient([1;z2]);
+	%delta2 = delta2(2:end,:);
+	
+	%deltaGrand_1 = deltaGrand_1 + delta2*x';
+	%deltaGrand_2 = deltaGrand_2 + delta3*a2';
 end;
 
 Theta1_grad = (1/m)*deltaGrand_1;
 Theta2_grad = (1/m)*deltaGrand_2;
+Theta3_grad = (1/m)*deltaGrand_3;
 
 
 for i=1:size(Theta1,1),
@@ -118,6 +145,12 @@ for i=1:size(Theta2,1),
 	end;
 end;
 
+for i=1:size(Theta3,1),
+	for j=2:size(Theta3,2),
+		Theta3_grad(i,j) = Theta3_grad(i,j) + (lambda/m)*Theta3(i,j);
+	end;
+end;
+
 
 %Theta2_grad(:,2:end) = Theta2_grad(:,2:end) + (lambda/m)*Theta2_grad(:,2:end);
 
@@ -128,7 +161,7 @@ end;
 % =========================================================================
 
 % Unroll gradients
-grad = [Theta1_grad(:) ; Theta2_grad(:)];
+grad = [Theta1_grad(:) ; Theta2_grad(:) ; Theta3_grad(:)];
 
 
 end
