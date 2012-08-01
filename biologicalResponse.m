@@ -3,6 +3,7 @@
 %
 %page_output_immediately(1) ;
 
+addpath("LogisticRegression:NeuralNetwork:SupportVectorMachine", "-end") ;
 printf('\nBiological Response Learning\n') ;
 
 %% =========== Part 1: Training Data Loading
@@ -67,9 +68,13 @@ options = optimset('GradObj', 'on', 'MaxIter', 400);
 % got 76.13 with C=30, sigma=3  TIME:4909 secs (> 1 hour)
 % got 72.40 with C=50, sigma=5  TIME:???? secs (> ? hour)
 % got 77.20 with C=30, sigma=5  TIME:5702 secs (> 1 hour)
+% got 75.33 with C=30, sigma=7  TIME:5474 secs (> 1 hour)
+% got 78.00 with C=30, sigma=4  TIME:4250 secs (> 1 hour)
+% got 76.40 with C=30, sigma=2  TIME:2804 secs (> 1 hour)
+% got ??.?? with C=30, sigma=3.5  TIME:???? secs (> 1 hour)
 
 C = 30; 
-sigma = 5.0;
+sigma = 3.0;
 %% ---------------------------------------------------
 
 learning_algorithm = "SVM" ;
