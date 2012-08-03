@@ -65,16 +65,21 @@ options = optimset('GradObj', 'on', 'MaxIter', 400);
 
 %% ----------------- SVM Parameters ------------------
 % got 72.0 with C=10, sigma=1
-% got 76.13 with C=30, sigma=3  TIME:4909 secs (> 1 hour)
-% got 72.40 with C=50, sigma=5  TIME:???? secs (> ? hour)
-% got 77.20 with C=30, sigma=5  TIME:5702 secs (> 1 hour)
-% got 75.33 with C=30, sigma=7  TIME:5474 secs (> 1 hour)
-% got 78.00 with C=30, sigma=4  TIME:4250 secs (> 1 hour)
-% got 76.40 with C=30, sigma=2  TIME:2804 secs (> 1 hour)
-% got ??.?? with C=30, sigma=3.5  TIME:???? secs (> 1 hour)
+% got 76.13 with C=30, sigma=3    TIME:4909 secs 
+% got 72.40 with C=50, sigma=5    TIME:???? secs
+% got 77.20 with C=30, sigma=5    TIME:5702 secs
+% got 75.33 with C=30, sigma=7    TIME:5474 secs
+% got 78.00 with C=30, sigma=4    TIME:4250 secs
+% got 76.40 with C=30, sigma=2    TIME:2804 secs
+% got 76.26 with C=30, sigma=3.5  TIME:4255 secs
+% got 78.40 with C=30, sigma=4.5  TIME:4981 secs
+% got 79.06 with C=30, sigma=4.75 TIME:4868 secs
+% got 75.46 with C=30, sigma=4.85 TIME:3769 secs
+% got 78.66 with C=16, sigma=4.75 TIME:5468 secs
+% got 77.46 with C=24, sigma=4.75 TIME:5158 secs
 
-C = 30; 
-sigma = 3.0;
+C = 20; 
+sigma = 4.75;
 %% ---------------------------------------------------
 
 learning_algorithm = "SVM" ;
@@ -108,7 +113,7 @@ for i = 1:DATAPOINTS_NEEDED
 								 x2, \
 								 sigma)); \
 	 
-     message = sprintf("C used: %.1f, sigma used: %.1f", C, sigma) ;
+     message = sprintf("C used: %.2f, sigma used: %.2f", C, sigma) ;
 
    endif
 
@@ -145,6 +150,6 @@ elseif (strcmp(learning_algorithm, "SVM"))
   p = svmPredict(model, X_test) ;
 endif
 
-printf("Train Accuracy: %f\n", mean(double(p == y_test)) * 100);
+printf("Train Accuracy: %.2f\n", mean(double(p == y_test)) * 100);
 
 
