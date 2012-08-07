@@ -45,7 +45,7 @@ initial_theta = zeros(size(X_train, 2), 1);
 
 % Determine the step to use to increase m. Assuming that we need 20
 % datapoints. We can change that number if needed.
-DATAPOINTS_NEEDED = 20 ;
+DATAPOINTS_NEEDED = 1 ;
 
 step_for_m = ceil(m / DATAPOINTS_NEEDED) ;
 m_count = step_for_m ;
@@ -65,21 +65,26 @@ options = optimset('GradObj', 'on', 'MaxIter', 400);
 
 %% ----------------- SVM Parameters ------------------
 % got 72.0 with C=10, sigma=1
-% got 76.13 with C=30, sigma=3    TIME:4909 secs 
-% got 72.40 with C=50, sigma=5    TIME:???? secs
-% got 77.20 with C=30, sigma=5    TIME:5702 secs
-% got 75.33 with C=30, sigma=7    TIME:5474 secs
-% got 78.00 with C=30, sigma=4    TIME:4250 secs
-% got 76.40 with C=30, sigma=2    TIME:2804 secs
-% got 76.26 with C=30, sigma=3.5  TIME:4255 secs
-% got 78.40 with C=30, sigma=4.5  TIME:4981 secs
-% got 79.06 with C=30, sigma=4.75 TIME:4868 secs
-% got 75.46 with C=30, sigma=4.85 TIME:3769 secs
-% got 78.66 with C=16, sigma=4.75 TIME:5468 secs
-% got 77.46 with C=24, sigma=4.75 TIME:5158 secs
+% got 76.13 with C=30, sigma=3    
+% got 72.40 with C=50, sigma=5    
+% got 77.20 with C=30, sigma=5    
+% got 75.33 with C=30, sigma=7   
+% got 78.00 with C=30, sigma=4    
+% got 76.40 with C=30, sigma=2    
+% got 76.26 with C=30, sigma=3.5  
+% got 78.40 with C=30, sigma=4.5  
+% got 79.06 with C=30, sigma=4.75 
+% got 75.46 with C=30, sigma=4.85 
+% got 78.66 with C=16, sigma=4.75 
+% got 76.13 with C=20, sigma=4.75 
+% got 77.46 with C=24, sigma=4.75 
+% got 77.33 with C=27, sigma=4.75 
+% got 77.60 with C=29, sigma=4.75 
+% got 77.33 with C=32, sigma=4.75 
 
-C = 20; 
+C = 32; 
 sigma = 4.75;
+kernel = "gaussian" ; %   "linear"
 %% ---------------------------------------------------
 
 learning_algorithm = "SVM" ;
@@ -87,7 +92,7 @@ learning_algorithm = "SVM" ;
 if (strcmp(learning_algorithm, "LR"))
   printf("Learning using Logistic Regression. ") ;
 elseif (strcmp(learning_algorithm, "SVM"))
-  printf("Learning using Support Vector Machine (Gaussian Kernel). ") ;
+  printf("Learning using Support Vector Machine (%s Kernel). ",kernel) ;
 endif
 
 fflush(stdout) ;
@@ -109,10 +114,14 @@ for i = 1:DATAPOINTS_NEEDED
      message = sprintf("Lambda used: %.1f", lambda) ;
 
    elseif (strcmp(learning_algorithm, "SVM"))
-     model= svmTrain(X_used, y_used, C, @(x1, x2) gaussianKernel(x1, \
+
+     if (strcmp(kernel, "gaussian"))
+       model= svmTrain(X_used, y_used, C, @(x1, x2) gaussianKernel(x1, \
 								 x2, \
 								 sigma)); \
-	 
+     else
+       model = svmTrain(X_used, y_used, C, @linearKernel, 1e-3, 20);
+     endif
      message = sprintf("C used: %.2f, sigma used: %.2f", C, sigma) ;
 
    endif
