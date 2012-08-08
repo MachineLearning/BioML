@@ -1,14 +1,13 @@
 %% Biological Response - Kaggle
 %
 %
-%page_output_immediately(1) ;
 
-addpath("LogisticRegression:NeuralNetwork:SupportVectorMachine", "-end") ;
-printf('\nBiological Response Learning\n') ;
+addpath("LogisticRegression","NeuralNetwork","SupportVectorMachine","Utils", "-end") ;
+pr('\nBiological Response Learning\n') ;
 
 %% =========== Part 1: Training Data Loading
 
-printf("\nLoading TRAINING data ... ") ;
+pr("\nLoading TRAINING data ... ") ;
 load("BioData.mat");
 
 % Add ones to the data matrix
@@ -18,8 +17,12 @@ load("BioData.mat");
 [X_train, y_train, X_cv, y_cv, X_test, y_test] = segmentDataset(X, y) ;
 
 [m, cols] = size(X_train) ;
-printf("done. Dimension for X_train is : %d X %d\n", m, cols);
-printf("Dimension for y_train is : %d X %d\n", size(y_train));
+pr("done. \nDimension for X_train is : %d X %d\n", m, cols);
+pr("Dimension for y_train is : %d X %d\n", size(y_train));
+pr("Dimension for X_cv is : %d X %d\n", size(X_cv));
+pr("Dimension for y_cv is : %d X %d\n", size(y_cv));
+pr("Dimension for X_test is : %d X %d\n", size(X_test));
+pr("Dimension for y_test is : %d X %d\n", size(y_test));
 
 % Determine whether the data is skewed
 %[ isskewed, skewnesspc ] = skewness( y_train, 0.1 ) ;
@@ -29,32 +32,14 @@ aux = '' ;
 if (! isskewed )
    aux = ' NOT' ;
 endif
-printf("Data is%s skewed\n", aux) ;
-printf("\nProgram paused (3 secs).\n");
+pr("Data is%s skewed\n", aux) ;
+pr("\nProgram paused (3 secs).\n");
 pause (3) ;
 
-% printf("\nGraphing data. Please wait ...\n");
-% visualiseData(X_train) ;
+pr("\nGraphing data. Please wait ...\n");
+%visualiseData(X_train) ;
 
 %% =========== Part 2: LEARNING ============
-
-
-% Initialize fitting parameters
-initial_theta = zeros(size(X_train, 2), 1);
-
-
-% Determine the step to use to increase m. Assuming that we need 20
-% datapoints. We can change that number if needed.
-DATAPOINTS_NEEDED = 1 ;
-
-step_for_m = ceil(m / DATAPOINTS_NEEDED) ;
-m_count = step_for_m ;
-
-m_values = zeros(DATAPOINTS_NEEDED, 1) ;
-J_train_values = zeros(DATAPOINTS_NEEDED, 1) ;
-J_cv_values = zeros(DATAPOINTS_NEEDED, 1) ;
-
-t0 = clock() ;
 
 %% ------- LOGISTIC REGRESSION PARAMETERS ------------
 % Set regularization parameter lambda to 1.
@@ -64,38 +49,73 @@ options = optimset('GradObj', 'on', 'MaxIter', 400);
 %% ---------------------------------------------------
 
 %% ----------------- SVM Parameters ------------------
-% got 72.0 with C=10, sigma=1
-% got 76.13 with C=30, sigma=3    
-% got 72.40 with C=50, sigma=5    
-% got 77.20 with C=30, sigma=5    
-% got 75.33 with C=30, sigma=7   
-% got 78.00 with C=30, sigma=4    
-% got 76.40 with C=30, sigma=2    
-% got 76.26 with C=30, sigma=3.5  
-% got 78.40 with C=30, sigma=4.5  
-% got 79.06 with C=30, sigma=4.75 
-% got 75.46 with C=30, sigma=4.85 
-% got 78.66 with C=16, sigma=4.75 
-% got 76.13 with C=20, sigma=4.75 
-% got 77.46 with C=24, sigma=4.75 
-% got 77.33 with C=27, sigma=4.75 
-% got 77.60 with C=29, sigma=4.75 
-% got 77.33 with C=32, sigma=4.75 
+% ---------------------------
+% Result     C    sigma  
+% ---------------------------
+%  72.00    10     1.0
+%  76.13    30     3.0
+%  72.40    50     5.0    
+%  77.20    30     5.0    
+%  75.33    30     7.0   
+%  78.00    30     4.0    
+%  76.40    30     2.0    
+%  76.26    30     3.5  
+%  78.40    30     4.5  
+%  79.06    30     4.75 
+%  75.46    30     4.85 
+%  78.66    16     4.75 
+%  76.13    20     4.75 
+%  77.46    24     4.75 
+%  77.33    27     4.75 
+%  77.60    29     4.75 
+%  77.33    32     4.75 
+%  79.87     2     4.75 
+%  79.07     2     4.75 
+%  78.93   0.5     4.75 
+%  78.53     4     4.75 
+%  78.13     1     4.75 
+%  77.73     4     4.75 
+%  79.87     8     4.75 
+%  80.00     9     4.75 
+%  78.40     9     4.85 
+%  76.53     9     4.80 
+%  77.87     9     4.70 
 
-C = 32; 
-sigma = 4.75;
-kernel = "gaussian" ; %   "linear"
+C = 9; 
+sigma = 4.70;
+kernel = "poly" ; % "gaussian", "linear" 
 %% ---------------------------------------------------
 
 learning_algorithm = "SVM" ;
 
 if (strcmp(learning_algorithm, "LR"))
-  printf("Learning using Logistic Regression. ") ;
+  pr("Learning using Logistic Regression. ") ;
 elseif (strcmp(learning_algorithm, "SVM"))
-  printf("Learning using Support Vector Machine (%s Kernel). ",kernel) ;
+  pr("Learning using Support Vector Machine (%s Kernel). ",kernel) ;
+
+  % combine the CV data with the training data
+  X_train = [ X_train ; X_cv ] ;
+  y_train = [ y_train ; y_cv ] ; 
 endif
 
-fflush(stdout) ;
+
+% Determine the step to use to increase m. Assuming that we need 20
+% datapoints. We can change that number if needed. For SVM we use only
+% one datapoint, i.e. we go through the whole training set.
+
+DATAPOINTS_NEEDED = 1 ;
+
+step_for_m = ceil(size(X_train,1) / DATAPOINTS_NEEDED) ;
+m_count = step_for_m ;
+
+m_values = zeros(DATAPOINTS_NEEDED, 1) ;
+J_train_values = zeros(DATAPOINTS_NEEDED, 1) ;
+J_cv_values = zeros(DATAPOINTS_NEEDED, 1) ;
+
+t0 = clock() ;
+
+% Initialize fitting parameters
+initial_theta = zeros(size(X_train, 2), 1);
 
 % Loop for increasing values of m. Needed to obtain pairs
 % (J_train, m) and (J_cv, m) in order to be able to plot
@@ -105,7 +125,6 @@ for i = 1:DATAPOINTS_NEEDED
    y_used = y_train(1:m_count, :) ;
 
    % Optimize
-
    if (strcmp(learning_algorithm, "LR"))
      [theta, J, exit_flag] = ...
 	fminunc(@(t)(lrCostFunction(t, X_used, y_used, lambda)), \
@@ -119,14 +138,24 @@ for i = 1:DATAPOINTS_NEEDED
        model= svmTrain(X_used, y_used, C, @(x1, x2) gaussianKernel(x1, \
 								 x2, \
 								 sigma)); \
-     else
+     elseif (strcmp(kernel, "linear"))
        model = svmTrain(X_used, y_used, C, @linearKernel, 1e-3, 20);
+  
+     else
+         g = 1 ;
+         r = 10 ;
+         d = 2 ;
+
+         model = svmTrain(X_used, y_used, C, @(x1, x2)
+			  polynomialKernel(x1, x2, g, \
+			  r, d));
+ 
      endif
      message = sprintf("C used: %.2f, sigma used: %.2f", C, sigma) ;
 
    endif
 
-   printf("\nLearning completed. %s -- # of samples used(m): %d\n",message, m_count) ;
+   pr("\nLearning completed. %s -- # of samples used(m): %d\n",message, m_count) ;
    
    % store the values to be plotted. NEED TO ADD J_cv
    if (strcmp(learning_algorithm, "LR"))
@@ -140,7 +169,7 @@ for i = 1:DATAPOINTS_NEEDED
 endfor
 
 elapsed_time = etime(clock(), t0) ;
-printf("\nElapsed time (in secs): %d",elapsed_time) ;
+pr("\nElapsed time (in secs): %d",elapsed_time) ;
 
 if (strcmp(learning_algorithm, "LR"))
   plotErrors(m_values, J_train_values, J_cv_values) ;
@@ -150,7 +179,7 @@ endif
 % Compute accuracy on our testing set.
 
 [m_test, cols] = size(X_test) ;
-printf("\nTest data dimension is : %d X %d\n", m_test, cols);
+pr("\nTest data dimension is : %d X %d\n", m_test, cols);
 
 
 if (strcmp(learning_algorithm, "LR"))
@@ -159,6 +188,6 @@ elseif (strcmp(learning_algorithm, "SVM"))
   p = svmPredict(model, X_test) ;
 endif
 
-printf("Train Accuracy: %.2f\n", mean(double(p == y_test)) * 100);
+pr("Train Accuracy: %.2f\n", mean(double(p == y_test)) * 100);
 
 
