@@ -13,7 +13,8 @@ Using Libsvm for learning -
   model. For cross-validation the option to specify is '-v N', where N is the number of buckets, and the output of 
   svmtrain is the accuracy which is a scalar. Lines 58 - 75 contain this part.
   
-  e) Without -v the output of svmtrain is a non-scalar model that can be directly plugged into svmpredict.
+  e) Without -v, the output of svmtrain is a non-scalar model that can be directly plugged into svmpredict. Some basic 
+  parameters are kernel type, cost, gamma, and degree of cross validation.
   
   f) Additional details at http://www.csie.ntu.edu.tw/~cjlin/libsvm/.
   
