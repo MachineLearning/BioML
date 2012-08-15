@@ -4,5 +4,5 @@ load('BioData.mat');
 X=[ones(size(X,1),1) X];
 [Xtrain,ytrain,Xcv,ycv,Xtest,ytest]=segmentDataset(X,y);
 [lambda theta]=optimiseLambda(Xtrain,ytrain,Xcv,ycv,true);
-printf('Optimal value for lambda is %.2f\n',lambda);
+pr('Optimal value for lambda is %.2f\n',lambda);
 
